@@ -11,6 +11,13 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Toolkit Contributors" }]
 keywords = ["dataset", "qa", "dedupe", "hashing", "multimodal"]
+
+[project.urls]
+Homepage = "https://github.com/AKIVA-AI/toolkit-mmqa"
+Repository = "https://github.com/AKIVA-AI/toolkit-mmqa"
+Documentation = "https://github.com/AKIVA-AI/toolkit-mmqa#readme"
+"Bug Tracker" = "https://github.com/AKIVA-AI/toolkit-mmqa/issues"
+
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -66,5 +73,3 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 toolkit_mmqa = ["py.typed"]
-
-
