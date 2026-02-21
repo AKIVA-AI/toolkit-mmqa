@@ -21,14 +21,13 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/AKIVA-AI/toolkit-mmqa"
 Repository = "https://github.com/AKIVA-AI/toolkit-mmqa"
 Documentation = "https://github.com/AKIVA-AI/toolkit-mmqa#readme"
 "Bug Tracker" = "https://github.com/AKIVA-AI/toolkit-mmqa/issues"
-
-dependencies = []
 
 [project.scripts]
 toolkit-mmqa = "toolkit_mmqa.cli:main"
