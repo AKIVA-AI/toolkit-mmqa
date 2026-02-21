@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  multimodal-qa:
+    build: .
+    container_name: toolkit-mmqa
+    volumes:
+      - ./datasets:/app/datasets
+      - ./reports:/app/reports
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    command: tail -f /dev/null
