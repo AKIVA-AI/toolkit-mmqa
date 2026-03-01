@@ -283,4 +283,3 @@ def test_full_workflow_with_duplicates(tmp_path: Path) -> None:
     assert result.file_count == 3
     assert len(result.duplicates) == 1
     assert len(result.duplicates[0]) == 2
-

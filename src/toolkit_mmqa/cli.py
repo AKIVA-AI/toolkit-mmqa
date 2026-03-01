@@ -46,7 +46,11 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 
     exts = None
     if args.extensions:
-        exts = {x.strip().lower().lstrip(".") for x in str(args.extensions).split(",") if x.strip()}
+        exts = {
+            x.strip().lower().lstrip(".")
+            for x in str(args.extensions).split(",")
+            if x.strip()
+        }
         logger.info(f"Filtering extensions: {', '.join(sorted(exts))}")
 
     result = scan(root=root_path, extensions=exts)
@@ -86,7 +90,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("scan", help="Scan a dataset directory and produce a dedupe report.")
+    s = sub.add_parser(
+        "scan", help="Scan a dataset directory and produce a dedupe report."
+    )
     s.add_argument("--root", required=True, help="Root directory to scan")
     s.add_argument("--out", default="", help="Output file path (default: stdout)")
     s.add_argument(
@@ -132,5 +138,3 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return EXIT_UNEXPECTED_ERROR
-
-

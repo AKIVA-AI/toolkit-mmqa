@@ -16,4 +16,3 @@ def test_scan_detects_duplicates(tmp_path: Path) -> None:
     rep = json.loads(out.read_text(encoding="utf-8"))
     assert rep["file_count"] == 2
     assert rep["duplicates"]
-
