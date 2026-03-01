@@ -10,15 +10,15 @@ toolkit-mmqa --version
 ## 📝 Basic Usage
 
 ```bash
-# Check dataset quality
-toolkit-mmqa check --dataset datasets/my-dataset --out report.json
+# Scan dataset for duplicates
+toolkit-mmqa scan --root datasets/my-dataset --out report.json
 ```
 
 ## 🐳 Docker Usage
 
 ```bash
 docker-compose up -d
-docker-compose exec multimodal-qa toolkit-mmqa check --dataset /app/datasets/my-dataset
+docker-compose exec multimodal-qa toolkit-mmqa scan --root /app/datasets/my-dataset
 ```
 
 ## 📚 Next Steps

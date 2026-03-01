@@ -7,7 +7,7 @@
 ```bash
 cd multimodal-dataset-qa
 docker-compose up -d
-docker-compose exec multimodal-qa toolkit-mmqa check --dataset datasets/my-dataset
+docker-compose exec multimodal-qa toolkit-mmqa scan --root datasets/my-dataset
 ```
 
 ### Local Installation
@@ -33,14 +33,14 @@ See `.env.example` for all options.
 
 ```yaml
 - name: Check Dataset Quality
-  run: toolkit-mmqa check --dataset $DATASET_PATH
+  run: toolkit-mmqa scan --root $DATASET_PATH
 ```
 
 ### Monitoring
 
-```python
-from toolkit_multimodal_qa.monitoring import get_health_status
-status = get_health_status()
+```bash
+# Run a scan and inspect the JSON report for dataset health
+toolkit-mmqa scan --root $DATASET_PATH --out report.json
 ```
 
 ## ðŸ“ž Support
