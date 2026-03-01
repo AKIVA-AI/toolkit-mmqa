@@ -8,8 +8,7 @@ from pathlib import Path
 import pytest
 
 from toolkit_mmqa.cli import EXIT_CLI_ERROR, EXIT_SUCCESS, main, validate_directory_path
-from toolkit_mmqa.scanner import ScanResult, scan
-
+from toolkit_mmqa.scanner import scan
 
 # ============================================================================
 # Path Validation Tests
