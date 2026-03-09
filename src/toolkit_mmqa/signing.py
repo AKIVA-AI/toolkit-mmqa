@@ -61,9 +61,9 @@ def canonical_json_bytes(obj: Any) -> bytes:
     Uses sorted keys and compact separators to ensure
     identical payloads produce identical bytes.
     """
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
-        "utf-8"
-    )
+    return json.dumps(
+        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
 
 
 def sign_payload(*, payload: bytes, private_key_pem: str) -> str:
@@ -84,7 +84,9 @@ def sign_payload(*, payload: bytes, private_key_pem: str) -> str:
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-    private_key = serialization.load_pem_private_key(private_key_pem.encode("utf-8"), password=None)
+    private_key = serialization.load_pem_private_key(
+        private_key_pem.encode("utf-8"), password=None
+    )
     if not isinstance(private_key, Ed25519PrivateKey):
         raise ValueError("Key is not an Ed25519 private key")
     sig = private_key.sign(payload)

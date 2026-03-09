@@ -46,7 +46,9 @@ def test_version_via_subprocess() -> None:
 # ============================================================================
 
 
-def test_cli_scan_stdout_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_cli_scan_stdout_json(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Scan prints valid JSON to stdout when --out is not given."""
     d = tmp_path / "data"
     d.mkdir()
@@ -103,7 +105,9 @@ def test_cli_diff_two_scans(tmp_path: Path) -> None:
     main(["scan", "--root", str(d2), "--out", str(scan2)])
 
     diff_out = tmp_path / "diff.json"
-    code = main(["diff", "--old", str(scan1), "--new", str(scan2), "--out", str(diff_out)])
+    code = main(
+        ["diff", "--old", str(scan1), "--new", str(scan2), "--out", str(diff_out)]
+    )
     assert code == EXIT_SUCCESS
 
     diff_data = json.loads(diff_out.read_text(encoding="utf-8"))
@@ -188,7 +192,13 @@ def test_cli_diff_stdout(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
         encoding="utf-8",
     )
     new.write_text(
-        json.dumps({"file_count": 3, "total_bytes": 150, "duplicates": [["a", "b"], ["c", "d"]]}),
+        json.dumps(
+            {
+                "file_count": 3,
+                "total_bytes": 150,
+                "duplicates": [["a", "b"], ["c", "d"]],
+            }
+        ),
         encoding="utf-8",
     )
     code = main(["diff", "--old", str(old), "--new", str(new)])

@@ -73,7 +73,7 @@ class MinHasher:
         # Generate random hash function coefficients: h(x) = (a*x + b) mod p
         import random
 
-        rng = random.Random(seed)
+        rng = random.Random(seed)  # nosec B311 - not used for security
         self._a = tuple(rng.randint(1, _MERSENNE_PRIME - 1) for _ in range(num_perm))
         self._b = tuple(rng.randint(0, _MERSENNE_PRIME - 1) for _ in range(num_perm))
 
@@ -88,7 +88,9 @@ class MinHasher:
         """
         tokens = _ngrams(text, self.ngram_size)
         if not tokens:
-            return MinHashSignature(values=tuple(_MAX_HASH for _ in range(self.num_perm)))
+            return MinHashSignature(
+                values=tuple(_MAX_HASH for _ in range(self.num_perm))
+            )
 
         token_hashes = [_hash_token(t) for t in set(tokens)]
 
