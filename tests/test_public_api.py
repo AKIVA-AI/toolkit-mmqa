@@ -29,7 +29,7 @@ def test_all_list_complete() -> None:
 
 def test_programmatic_scan(tmp_path) -> None:
     """Library can be used programmatically via imports."""
-    from toolkit_mmqa import scan, ScanResult
+    from toolkit_mmqa import ScanResult, scan
 
     (tmp_path / "a.txt").write_text("hello", encoding="utf-8")
     result = scan(root=tmp_path)
@@ -39,7 +39,7 @@ def test_programmatic_scan(tmp_path) -> None:
 
 def test_programmatic_report() -> None:
     """generate_report works via public API."""
-    from toolkit_mmqa import generate_report, ReportSummary
+    from toolkit_mmqa import ReportSummary, generate_report
 
     data = {"file_count": 5, "total_bytes": 500, "duplicates": [["a", "b"]]}
     report = generate_report(data)
@@ -49,7 +49,7 @@ def test_programmatic_report() -> None:
 
 def test_programmatic_text_dedup() -> None:
     """find_near_duplicates works via public API."""
-    from toolkit_mmqa import find_near_duplicates, TextDedupResult
+    from toolkit_mmqa import TextDedupResult, find_near_duplicates
 
     texts = {"a.txt": "hello world", "b.txt": "hello world"}
     result = find_near_duplicates(texts, threshold=0.8)

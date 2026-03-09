@@ -33,11 +33,15 @@ Documentation = "https://github.com/AKIVA-AI/toolkit-mmqa#readme"
 toolkit-mmqa = "toolkit_mmqa.cli:main"
 
 [project.optional-dependencies]
+signing = [
+  "cryptography>=41.0.0",
+]
 dev = [
   "pytest>=8.0.0",
   "pytest-cov>=5.0.0",
   "ruff>=0.6.0",
   "pyright>=1.1.380",
+  "cryptography>=41.0.0",
 ]
 
 [tool.pytest.ini_options]

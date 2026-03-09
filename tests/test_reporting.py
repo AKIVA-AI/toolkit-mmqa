@@ -9,12 +9,10 @@ import pytest
 
 from toolkit_mmqa.reporting import (
     DiffResult,
-    ReportSummary,
     diff_scans,
     generate_report,
     load_scan_file,
 )
-
 
 # ============================================================================
 # generate_report

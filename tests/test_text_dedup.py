@@ -6,12 +6,10 @@ import pytest
 
 from toolkit_mmqa.text_dedup import (
     MinHasher,
-    MinHashSignature,
     TextDedupResult,
-    find_near_duplicates,
     _ngrams,
+    find_near_duplicates,
 )
-
 
 # ============================================================================
 # N-gram extraction

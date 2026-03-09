@@ -15,7 +15,6 @@ import pytest
 from toolkit_mmqa import __version__
 from toolkit_mmqa.cli import EXIT_CLI_ERROR, EXIT_SUCCESS, main
 
-
 # ============================================================================
 # --version flag (Task 1)
 # ============================================================================

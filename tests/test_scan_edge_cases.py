@@ -14,7 +14,6 @@ import pytest
 
 from toolkit_mmqa.scanner import ScanResult, scan
 
-
 # ============================================================================
 # Empty directory variants
 # ============================================================================
