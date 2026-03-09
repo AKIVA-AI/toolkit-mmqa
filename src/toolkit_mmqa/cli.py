@@ -6,6 +6,8 @@ import logging
 import sys
 from pathlib import Path
 
+from . import __version__
+from .reporting import diff_scans, generate_report, load_scan_file
 from .scanner import scan
 
 logger = logging.getLogger(__name__)
@@ -77,10 +79,81 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     return EXIT_SUCCESS
 
 
+def _cmd_report(args: argparse.Namespace) -> int:
+    """Generate summary report from a scan result file."""
+    scan_path = Path(args.input).resolve()
+    if not scan_path.exists():
+        logger.error(f"Scan file not found: {scan_path}")
+        return EXIT_CLI_ERROR
+
+    try:
+        data = load_scan_file(scan_path)
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Invalid scan file: {e}")
+        return EXIT_CLI_ERROR
+
+    summary = generate_report(data)
+    out = json.dumps(summary.to_json(), indent=2, sort_keys=True)
+
+    if args.out:
+        out_path = Path(args.out).resolve()
+        try:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(out, encoding="utf-8")
+            logger.info(f"Report saved to: {out_path}")
+        except (OSError, PermissionError) as e:
+            logger.error(f"Failed to write output file: {e}")
+            return EXIT_CLI_ERROR
+    else:
+        print(out)
+
+    return EXIT_SUCCESS
+
+
+def _cmd_diff(args: argparse.Namespace) -> int:
+    """Compare two scan result files."""
+    old_path = Path(args.old).resolve()
+    new_path = Path(args.new).resolve()
+
+    for label, p in [("Old", old_path), ("New", new_path)]:
+        if not p.exists():
+            logger.error(f"{label} scan file not found: {p}")
+            return EXIT_CLI_ERROR
+
+    try:
+        old_data = load_scan_file(old_path)
+        new_data = load_scan_file(new_path)
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Invalid scan file: {e}")
+        return EXIT_CLI_ERROR
+
+    result = diff_scans(old_data, new_data)
+    out = json.dumps(result.to_json(), indent=2, sort_keys=True)
+
+    if args.out:
+        out_path = Path(args.out).resolve()
+        try:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(out, encoding="utf-8")
+            logger.info(f"Diff saved to: {out_path}")
+        except (OSError, PermissionError) as e:
+            logger.error(f"Failed to write output file: {e}")
+            return EXIT_CLI_ERROR
+    else:
+        print(out)
+
+    return EXIT_SUCCESS
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="toolkit-mmqa",
         description="Toolkit Multimodal Dataset QA - Detect duplicate files in datasets",
+    )
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     p.add_argument(
         "--verbose",
@@ -90,6 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
+    # scan subcommand
     s = sub.add_parser(
         "scan", help="Scan a dataset directory and produce a dedupe report."
     )
@@ -101,6 +175,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated file extensions to scan (default: all)",
     )
     s.set_defaults(func=_cmd_scan)
+
+    # report subcommand
+    r = sub.add_parser(
+        "report", help="Generate summary statistics from a scan result file."
+    )
+    r.add_argument("--input", required=True, help="Path to scan result JSON file")
+    r.add_argument("--out", default="", help="Output file path (default: stdout)")
+    r.set_defaults(func=_cmd_report)
+
+    # diff subcommand
+    d = sub.add_parser(
+        "diff", help="Compare two scan result files and show changes."
+    )
+    d.add_argument("--old", required=True, help="Path to old scan result JSON file")
+    d.add_argument("--new", required=True, help="Path to new scan result JSON file")
+    d.add_argument("--out", default="", help="Output file path (default: stdout)")
+    d.set_defaults(func=_cmd_diff)
+
     return p
 
 
