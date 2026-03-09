@@ -108,11 +108,17 @@ def test_max_file_size_cli_flag(tmp_path: Path) -> None:
     (tmp_path / "large.txt").write_text("x" * 1000, encoding="utf-8")
 
     out_file = tmp_path / "report.json"
-    exit_code = main([
-        "scan", "--root", str(tmp_path),
-        "--max-file-size", "100",
-        "--out", str(out_file),
-    ])
+    exit_code = main(
+        [
+            "scan",
+            "--root",
+            str(tmp_path),
+            "--max-file-size",
+            "100",
+            "--out",
+            str(out_file),
+        ]
+    )
     assert exit_code == EXIT_SUCCESS
 
     report = json.loads(out_file.read_text(encoding="utf-8"))
@@ -278,9 +284,7 @@ def test_sign_and_verify() -> None:
     assert isinstance(sig, str)
     assert len(sig) > 0
 
-    valid = verify_payload(
-        payload=payload, signature_b64=sig, public_key_pem=kp.public_key_pem
-    )
+    valid = verify_payload(payload=payload, signature_b64=sig, public_key_pem=kp.public_key_pem)
     assert valid is True
 
 
@@ -292,9 +296,7 @@ def test_verify_tampered_payload() -> None:
     payload = b"original"
     sig = sign_payload(payload=payload, private_key_pem=kp.private_key_pem)
 
-    valid = verify_payload(
-        payload=b"tampered", signature_b64=sig, public_key_pem=kp.public_key_pem
-    )
+    valid = verify_payload(payload=b"tampered", signature_b64=sig, public_key_pem=kp.public_key_pem)
     assert valid is False
 
 
@@ -333,11 +335,18 @@ def test_sign_scan_result_cli(tmp_path: Path) -> None:
 
     # Sign scan
     out_file = tmp_path / "signed_report.json"
-    exit_code = main([
-        "scan", "--root", str(data_dir),
-        "--sign", "--sign-key", str(key_file),
-        "--out", str(out_file),
-    ])
+    exit_code = main(
+        [
+            "scan",
+            "--root",
+            str(data_dir),
+            "--sign",
+            "--sign-key",
+            str(key_file),
+            "--out",
+            str(out_file),
+        ]
+    )
     assert exit_code == EXIT_SUCCESS
 
     report = json.loads(out_file.read_text(encoding="utf-8"))
@@ -408,10 +417,16 @@ def test_sign_missing_key_file(tmp_path: Path) -> None:
     data_dir.mkdir()
     (data_dir / "file.txt").write_text("test", encoding="utf-8")
 
-    exit_code = main([
-        "scan", "--root", str(data_dir),
-        "--sign", "--sign-key", str(tmp_path / "nonexistent.pem"),
-    ])
+    exit_code = main(
+        [
+            "scan",
+            "--root",
+            str(data_dir),
+            "--sign",
+            "--sign-key",
+            str(tmp_path / "nonexistent.pem"),
+        ]
+    )
     assert exit_code == EXIT_CLI_ERROR
 
 

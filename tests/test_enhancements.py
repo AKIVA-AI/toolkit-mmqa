@@ -1,4 +1,4 @@
-﻿"""Tests for multimodal-dataset-qa enhancements."""
+"""Tests for multimodal-dataset-qa enhancements."""
 
 from __future__ import annotations
 

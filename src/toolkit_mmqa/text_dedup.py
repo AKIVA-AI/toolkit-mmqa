@@ -33,7 +33,10 @@ def _ngrams(text: str, n: int = 3) -> list[str]:
 
 def _hash_token(token: str) -> int:
     """Hash a token string to a 32-bit integer."""
-    return struct.unpack("<I", hashlib.md5(token.encode("utf-8")).digest()[:4])[0]
+    return struct.unpack(
+        "<I",
+        hashlib.md5(token.encode("utf-8"), usedforsecurity=False).digest()[:4],
+    )[0]
 
 
 @dataclass(frozen=True)
@@ -109,7 +112,7 @@ class MinHasher:
         """
         if sig_a.num_perm != sig_b.num_perm:
             raise ValueError("Signatures must have the same number of permutations")
-        matches = sum(a == b for a, b in zip(sig_a.values, sig_b.values))
+        matches = sum(a == b for a, b in zip(sig_a.values, sig_b.values, strict=True))
         return matches / sig_a.num_perm
 
 
