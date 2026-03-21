@@ -402,35 +402,42 @@ class TestModuleDocstrings:
 
     def test_init_has_docstring(self) -> None:
         import toolkit_mmqa
+
         assert toolkit_mmqa.__doc__ is not None
         assert len(toolkit_mmqa.__doc__) > 50
 
     def test_hashing_has_docstring(self) -> None:
         import toolkit_mmqa.hashing
+
         assert toolkit_mmqa.hashing.__doc__ is not None
         assert "SHA-256" in toolkit_mmqa.hashing.__doc__
 
     def test_scanner_has_docstring(self) -> None:
         import toolkit_mmqa.scanner
+
         assert toolkit_mmqa.scanner.__doc__ is not None
         assert "duplicate" in toolkit_mmqa.scanner.__doc__.lower()
 
     def test_reporting_has_docstring(self) -> None:
         import toolkit_mmqa.reporting
+
         assert toolkit_mmqa.reporting.__doc__ is not None
 
     def test_text_dedup_has_docstring(self) -> None:
         import toolkit_mmqa.text_dedup
+
         assert toolkit_mmqa.text_dedup.__doc__ is not None
         assert "MinHash" in toolkit_mmqa.text_dedup.__doc__
 
     def test_signing_has_docstring(self) -> None:
         import toolkit_mmqa.signing
+
         assert toolkit_mmqa.signing.__doc__ is not None
 
     def test_cli_has_no_crash_importing(self) -> None:
         """cli module imports without error."""
         import toolkit_mmqa.cli
+
         assert toolkit_mmqa.cli.main is not None
 
 
@@ -527,6 +534,7 @@ class TestDataProvenance:
     def test_metadata_exported_from_package(self) -> None:
         """ScanMetadata is available from the top-level package."""
         from toolkit_mmqa import ScanMetadata as SM
+
         assert SM is not None
 
 
@@ -675,12 +683,19 @@ class TestCLIAdditional:
         (d / "big.txt").write_text("x" * 500, encoding="utf-8")
         (d / "image.jpg").write_bytes(b"\xff\xd8")
         out = tmp_path / "out.json"
-        code = main([
-            "scan", "--root", str(d),
-            "--extensions", "txt",
-            "--max-file-size", "100",
-            "--out", str(out),
-        ])
+        code = main(
+            [
+                "scan",
+                "--root",
+                str(d),
+                "--extensions",
+                "txt",
+                "--max-file-size",
+                "100",
+                "--out",
+                str(out),
+            ]
+        )
         assert code == EXIT_SUCCESS
         data = json.loads(out.read_text(encoding="utf-8"))
         assert data["file_count"] == 1  # only small.txt
@@ -707,14 +722,18 @@ class TestCLIAdditional:
     def test_build_parser_verify_subcommand(self) -> None:
         """verify subcommand is registered in the parser."""
         parser = build_parser()
-        args = parser.parse_args([
-            "verify", "--input", "/tmp/scan.json", "--public-key", "/tmp/pub.pem"
-        ])
+        args = parser.parse_args(
+            ["verify", "--input", "/tmp/scan.json", "--public-key", "/tmp/pub.pem"]
+        )
         assert args.cmd == "verify"
 
     def test_cli_diff_all_groups_removed(self, tmp_path: Path) -> None:
         """Diff where all groups are removed."""
-        old = {"file_count": 4, "total_bytes": 200, "duplicates": [["a", "b"], ["c", "d"]]}
+        old = {
+            "file_count": 4,
+            "total_bytes": 200,
+            "duplicates": [["a", "b"], ["c", "d"]],
+        }
         new = {"file_count": 2, "total_bytes": 100, "duplicates": []}
         result = diff_scans(old, new)
         assert len(result.removed_duplicate_groups) == 2
