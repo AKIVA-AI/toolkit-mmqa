@@ -1,20 +1,82 @@
+"""Directory scanner for exact-duplicate file detection.
+
+Walks a directory tree, computes SHA-256 hashes for every file, and groups
+files with identical hashes into duplicate groups.  Supports extension
+filtering, maximum file-size limits, symlink handling, and an optional
+progress bar.
+
+Each scan result includes **provenance metadata** (timestamp, tool version,
+scanned root path) so that downstream consumers can trace the origin of
+a report.
+"""
+
 from __future__ import annotations
 
 import logging
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from .hashing import sha256_file
 
+# Version is defined here to avoid circular import with __init__.py.
+# Keep in sync with __init__.__version__.
+_TOOL_VERSION = "0.1.0"
+
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
+class ScanMetadata:
+    """Provenance metadata attached to every scan result.
+
+    Captures *when* and *how* a scan was produced so that reports can be
+    traced back to a specific tool version and dataset root.
+
+    Attributes:
+        tool_version: Version string of toolkit-mmqa that produced this scan.
+        scanned_root: Absolute path of the directory that was scanned.
+        timestamp: ISO-8601 UTC timestamp of when the scan completed.
+        extensions_filter: Set of extensions used to filter files, or None.
+        max_file_size: Maximum file-size limit applied, or None.
+    """
+
+    tool_version: str
+    scanned_root: str
+    timestamp: str
+    extensions_filter: tuple[str, ...] | None = None
+    max_file_size: int | None = None
+
+    def to_json(self) -> dict[str, Any]:
+        """Serialize metadata to a JSON-compatible dict."""
+        result: dict[str, Any] = {
+            "tool_version": self.tool_version,
+            "scanned_root": self.scanned_root,
+            "timestamp": self.timestamp,
+        }
+        if self.extensions_filter is not None:
+            result["extensions_filter"] = list(self.extensions_filter)
+        if self.max_file_size is not None:
+            result["max_file_size"] = self.max_file_size
+        return result
+
+
+@dataclass(frozen=True)
 class ScanResult:
-    """Result of scanning a directory for duplicate files."""
+    """Result of scanning a directory for duplicate files.
+
+    Attributes:
+        file_count: Number of files successfully hashed.
+        total_bytes: Sum of sizes (in bytes) of all hashed files.
+        duplicates: Groups of relative file paths sharing the same SHA-256.
+        skipped_count: Files skipped due to I/O errors.
+        skipped_oversized: Files skipped because they exceeded max_file_size.
+        skipped_symlinks: Symlinks skipped when follow_symlinks was False.
+        metadata: Provenance metadata for this scan.
+    """
 
     file_count: int
     total_bytes: int
@@ -22,10 +84,15 @@ class ScanResult:
     skipped_count: int = 0
     skipped_oversized: int = 0
     skipped_symlinks: int = 0
+    metadata: ScanMetadata | None = None
 
     def to_json(self) -> dict[str, Any]:
-        """Convert scan result to JSON-serializable dict."""
-        return {
+        """Convert scan result to JSON-serializable dict.
+
+        Returns:
+            Dictionary with all scan fields suitable for ``json.dumps``.
+        """
+        result: dict[str, Any] = {
             "file_count": int(self.file_count),
             "total_bytes": int(self.total_bytes),
             "duplicates": [list(g) for g in self.duplicates],
@@ -33,6 +100,9 @@ class ScanResult:
             "skipped_oversized": int(self.skipped_oversized),
             "skipped_symlinks": int(self.skipped_symlinks),
         }
+        if self.metadata is not None:
+            result["metadata"] = self.metadata.to_json()
+        return result
 
 
 def _write_progress(current: int, total: int) -> None:
@@ -73,6 +143,13 @@ def scan(
         OSError: If filesystem errors occur
     """
     root = root.resolve()
+    if not root.exists():
+        raise FileNotFoundError(f"Scan root directory not found: {root}")
+    if not root.is_dir():
+        raise NotADirectoryError(f"Scan root is not a directory: {root}")
+    if max_file_size is not None and max_file_size < 0:
+        raise ValueError(f"max_file_size must be >= 0, got {max_file_size}")
+
     hashes: dict[str, list[str]] = defaultdict(list)
     total_bytes = 0
     file_count = 0
@@ -136,6 +213,15 @@ def scan(
 
     logger.debug(f"Found {len(dupes)} duplicate groups")
 
+    # Build provenance metadata
+    meta = ScanMetadata(
+        tool_version=_TOOL_VERSION,
+        scanned_root=str(root),
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        extensions_filter=tuple(sorted(extensions)) if extensions else None,
+        max_file_size=max_file_size,
+    )
+
     return ScanResult(
         file_count=file_count,
         total_bytes=total_bytes,
@@ -143,4 +229,5 @@ def scan(
         skipped_count=skipped_count,
         skipped_oversized=skipped_oversized,
         skipped_symlinks=skipped_symlinks,
+        metadata=meta,
     )

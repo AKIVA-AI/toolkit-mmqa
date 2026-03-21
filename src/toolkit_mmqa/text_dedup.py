@@ -1,7 +1,26 @@
 """Near-duplicate text detection using MinHash with Jaccard similarity.
 
 Provides text-level deduplication beyond exact hash matching by detecting
-near-duplicate documents using the MinHash locality-sensitive hashing technique.
+near-duplicate documents using the MinHash locality-sensitive hashing
+technique.
+
+**Algorithm overview**
+
+1. Each document is **shingled** into overlapping character n-grams
+   (default trigrams).
+2. A family of ``num_perm`` random hash functions of the form
+   ``h(x) = (a*x + b) mod p`` (where *p* is a large Mersenne prime)
+   is applied to every shingle hash.
+3. For each hash function the **minimum** value across all shingles is
+   kept, producing a compact *MinHash signature*.
+4. The **Jaccard similarity** of two documents is estimated as the
+   fraction of signature slots that agree.
+5. Documents whose estimated Jaccard similarity meets or exceeds
+   ``threshold`` are grouped via **Union-Find** (with path compression).
+
+References:
+    Broder, A. Z. (1997). *On the resemblance and containment of
+    documents*. In Proc. Compression and Complexity of Sequences.
 """
 
 from __future__ import annotations
@@ -10,8 +29,12 @@ import hashlib
 import struct
 from dataclasses import dataclass, field
 
-# Large Mersenne prime for hash modular arithmetic
+# Large Mersenne prime used as the modulus in the universal hash family.
+# 2^61 - 1 is prime and large enough to avoid collision issues with
+# 32-bit token hashes while fitting in a 64-bit integer.
 _MERSENNE_PRIME = (1 << 61) - 1
+
+# Sentinel value used for empty-document signatures (maximum 32-bit value).
 _MAX_HASH = (1 << 32) - 1
 
 
@@ -32,7 +55,19 @@ def _ngrams(text: str, n: int = 3) -> list[str]:
 
 
 def _hash_token(token: str) -> int:
-    """Hash a token string to a 32-bit integer."""
+    """Hash a token string to a 32-bit unsigned integer.
+
+    Uses the first 4 bytes of an MD5 digest (explicitly marked as
+    non-security-critical) interpreted as a little-endian uint32.
+    MD5 is chosen for speed; collision resistance is not required
+    because MinHash is probabilistic by design.
+
+    Args:
+        token: The n-gram string to hash.
+
+    Returns:
+        A 32-bit unsigned integer hash value.
+    """
     return struct.unpack(
         "<I",
         hashlib.md5(token.encode("utf-8"), usedforsecurity=False).digest()[:4],
@@ -68,9 +103,15 @@ class MinHasher:
         ngram_size: int = 3,
         seed: int = 42,
     ) -> None:
+        if num_perm < 1:
+            raise ValueError(f"num_perm must be >= 1, got {num_perm}")
+        if ngram_size < 1:
+            raise ValueError(f"ngram_size must be >= 1, got {ngram_size}")
         self.num_perm = num_perm
         self.ngram_size = ngram_size
-        # Generate random hash function coefficients: h(x) = (a*x + b) mod p
+        # Generate random hash function coefficients for the universal hash
+        # family: h_i(x) = (a_i * x + b_i) mod p, where p is a Mersenne prime.
+        # Each coefficient pair defines one independent hash function.
         import random
 
         rng = random.Random(seed)  # nosec B311 - not used for security
@@ -153,6 +194,10 @@ def find_near_duplicates(
     """
     if threshold < 0.0 or threshold > 1.0:
         raise ValueError("Threshold must be between 0.0 and 1.0")
+    if num_perm < 1:
+        raise ValueError(f"num_perm must be >= 1, got {num_perm}")
+    if ngram_size < 1:
+        raise ValueError(f"ngram_size must be >= 1, got {ngram_size}")
 
     hasher = MinHasher(num_perm=num_perm, ngram_size=ngram_size)
     signatures: dict[str, MinHashSignature] = {}
@@ -161,18 +206,26 @@ def find_near_duplicates(
         signatures[path] = hasher.signature(text)
 
     paths = list(signatures.keys())
-    # Union-Find for grouping
+
+    # --- Union-Find (disjoint-set) data structure ---
+    # Each document starts as its own set.  When two documents exceed the
+    # similarity threshold they are merged.  Path compression (the
+    # grandparent trick in `find`) keeps amortised cost near O(1).
     parent: dict[str, str] = {p: p for p in paths}
 
     def find(x: str) -> str:
+        """Find root with path-compression (halving)."""
         while parent[x] != x:
-            parent[x] = parent[parent[x]]
+            parent[x] = parent[parent[x]]  # path compression
             x = parent[x]
         return x
 
     def union(x: str, y: str) -> None:
+        """Merge the sets containing *x* and *y*."""
         parent[find(x)] = find(y)
 
+    # --- Pairwise comparison ---
+    # O(n^2) comparisons; acceptable for typical dataset sizes.
     scores: dict[str, float] = {}
     for i in range(len(paths)):
         for j in range(i + 1, len(paths)):
@@ -182,13 +235,15 @@ def find_near_duplicates(
                 scores[pair_key] = round(sim, 4)
                 union(paths[i], paths[j])
 
-    # Build groups
+    # --- Collect connected components ---
     groups_map: dict[str, list[str]] = {}
     for p in paths:
         root = find(p)
         groups_map.setdefault(root, []).append(p)
 
+    # Only keep groups with 2+ members (actual near-duplicates).
     groups = [sorted(g) for g in groups_map.values() if len(g) > 1]
+    # Sort: largest groups first, then alphabetically for determinism.
     groups.sort(key=lambda g: (-len(g), g[0]))
 
     return TextDedupResult(near_duplicate_groups=groups, similarity_scores=scores)
