@@ -129,9 +129,7 @@ class MinHasher:
         """
         tokens = _ngrams(text, self.ngram_size)
         if not tokens:
-            return MinHashSignature(
-                values=tuple(_MAX_HASH for _ in range(self.num_perm))
-            )
+            return MinHashSignature(values=tuple(_MAX_HASH for _ in range(self.num_perm)))
 
         token_hashes = [_hash_token(t) for t in set(tokens)]
 

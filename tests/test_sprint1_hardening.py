@@ -146,9 +146,7 @@ def test_max_file_size_zero(tmp_path: Path) -> None:
 # ============================================================================
 
 
-@pytest.mark.skipif(
-    os.name == "nt", reason="Symlinks require elevated privileges on Windows"
-)
+@pytest.mark.skipif(os.name == "nt", reason="Symlinks require elevated privileges on Windows")
 def test_skip_symlinks(tmp_path: Path) -> None:
     """Test that symlinks are skipped when follow_symlinks=False."""
     real_file = tmp_path / "real.txt"
@@ -161,9 +159,7 @@ def test_skip_symlinks(tmp_path: Path) -> None:
     assert result.skipped_symlinks == 1
 
 
-@pytest.mark.skipif(
-    os.name == "nt", reason="Symlinks require elevated privileges on Windows"
-)
+@pytest.mark.skipif(os.name == "nt", reason="Symlinks require elevated privileges on Windows")
 def test_follow_symlinks_default(tmp_path: Path) -> None:
     """Test that symlinks are followed by default."""
     real_file = tmp_path / "real.txt"
@@ -266,9 +262,7 @@ def test_json_formatter_with_exception() -> None:
 def test_json_logging_cli(tmp_path: Path) -> None:
     """Test --log-format json through CLI."""
     (tmp_path / "file.txt").write_text("test", encoding="utf-8")
-    exit_code = main(
-        ["--verbose", "--log-format", "json", "scan", "--root", str(tmp_path)]
-    )
+    exit_code = main(["--verbose", "--log-format", "json", "scan", "--root", str(tmp_path)])
     assert exit_code == EXIT_SUCCESS
 
 
@@ -300,9 +294,7 @@ def test_sign_and_verify() -> None:
     assert isinstance(sig, str)
     assert len(sig) > 0
 
-    valid = verify_payload(
-        payload=payload, signature_b64=sig, public_key_pem=kp.public_key_pem
-    )
+    valid = verify_payload(payload=payload, signature_b64=sig, public_key_pem=kp.public_key_pem)
     assert valid is True
 
 
@@ -318,9 +310,7 @@ def test_verify_tampered_payload() -> None:
     payload = b"original"
     sig = sign_payload(payload=payload, private_key_pem=kp.private_key_pem)
 
-    valid = verify_payload(
-        payload=b"tampered", signature_b64=sig, public_key_pem=kp.public_key_pem
-    )
+    valid = verify_payload(payload=b"tampered", signature_b64=sig, public_key_pem=kp.public_key_pem)
     assert valid is False
 
 
@@ -399,9 +389,7 @@ def test_verify_subcommand(tmp_path: Path) -> None:
     scan_file = tmp_path / "signed.json"
     scan_file.write_text(json.dumps(scan_data), encoding="utf-8")
 
-    exit_code = main(
-        ["verify", "--input", str(scan_file), "--public-key", str(pub_file)]
-    )
+    exit_code = main(["verify", "--input", str(scan_file), "--public-key", str(pub_file)])
     assert exit_code == EXIT_SUCCESS
 
 
@@ -417,9 +405,7 @@ def test_verify_subcommand_invalid_sig(tmp_path: Path) -> None:
     scan_file = tmp_path / "bad.json"
     scan_file.write_text(json.dumps(scan_data), encoding="utf-8")
 
-    exit_code = main(
-        ["verify", "--input", str(scan_file), "--public-key", str(pub_file)]
-    )
+    exit_code = main(["verify", "--input", str(scan_file), "--public-key", str(pub_file)])
     assert exit_code == EXIT_CLI_ERROR
 
 
@@ -435,9 +421,7 @@ def test_verify_subcommand_no_signature(tmp_path: Path) -> None:
     scan_file = tmp_path / "unsigned.json"
     scan_file.write_text(json.dumps(scan_data), encoding="utf-8")
 
-    exit_code = main(
-        ["verify", "--input", str(scan_file), "--public-key", str(pub_file)]
-    )
+    exit_code = main(["verify", "--input", str(scan_file), "--public-key", str(pub_file)])
     assert exit_code == EXIT_CLI_ERROR
 
 

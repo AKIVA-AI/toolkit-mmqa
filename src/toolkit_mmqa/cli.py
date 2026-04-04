@@ -63,11 +63,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 
     exts = None
     if args.extensions:
-        exts = {
-            x.strip().lower().lstrip(".")
-            for x in str(args.extensions).split(",")
-            if x.strip()
-        }
+        exts = {x.strip().lower().lstrip(".") for x in str(args.extensions).split(",") if x.strip()}
         logger.info(f"Filtering extensions: {', '.join(sorted(exts))}")
 
     max_file_size = None
@@ -258,9 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     # scan subcommand
-    s = sub.add_parser(
-        "scan", help="Scan a dataset directory and produce a dedupe report."
-    )
+    s = sub.add_parser("scan", help="Scan a dataset directory and produce a dedupe report.")
     s.add_argument("--root", required=True, help="Root directory to scan")
     s.add_argument("--out", default="", help="Output file path (default: stdout)")
     s.add_argument(
@@ -307,9 +301,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(func=_cmd_scan)
 
     # report subcommand
-    r = sub.add_parser(
-        "report", help="Generate summary statistics from a scan result file."
-    )
+    r = sub.add_parser("report", help="Generate summary statistics from a scan result file.")
     r.add_argument("--input", required=True, help="Path to scan result JSON file")
     r.add_argument("--out", default="", help="Output file path (default: stdout)")
     r.set_defaults(func=_cmd_report)
@@ -322,15 +314,9 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(func=_cmd_diff)
 
     # verify subcommand
-    v = sub.add_parser(
-        "verify", help="Verify the Ed25519 signature of a scan result file."
-    )
-    v.add_argument(
-        "--input", required=True, help="Path to signed scan result JSON file"
-    )
-    v.add_argument(
-        "--public-key", required=True, help="Path to Ed25519 public key PEM file"
-    )
+    v = sub.add_parser("verify", help="Verify the Ed25519 signature of a scan result file.")
+    v.add_argument("--input", required=True, help="Path to signed scan result JSON file")
+    v.add_argument("--public-key", required=True, help="Path to Ed25519 public key PEM file")
     v.set_defaults(func=_cmd_verify)
 
     return p

@@ -7,25 +7,25 @@ Coverage:
   - tool_specs: TOOLKIT_TOOL_SPECS covers all 4 commands, get_tool_spec lookup
   - Optional framework import: _HAS_EXECUTION_CONTRACTS flag is a bool (no crash)
 """
+
 from __future__ import annotations
 
-from toolkit_mmqa.control_plane.contracts import (
-    ApprovalPolicy,
-    AuthorityBoundary,
-    PermissionScope,
-    ToolSpec,
-    _HAS_EXECUTION_CONTRACTS,
-)
 from toolkit_mmqa.control_plane.config import (
     CONFIG_LEVELS,
     ToolkitConfigContract,
     build_config_hierarchy,
 )
+from toolkit_mmqa.control_plane.contracts import (
+    _HAS_EXECUTION_CONTRACTS,
+    ApprovalPolicy,
+    AuthorityBoundary,
+    PermissionScope,
+    ToolSpec,
+)
 from toolkit_mmqa.control_plane.tool_specs import (
     TOOLKIT_TOOL_SPECS,
     get_tool_spec,
 )
-
 
 # -- contracts ----------------------------------------------------------------
 
@@ -37,7 +37,9 @@ class TestPermissionScope:
         assert PermissionScope.FULL_ACCESS.value == "full_access"
 
     def test_ordinal_ascending(self) -> None:
-        boundary = AuthorityBoundary(scope=PermissionScope.FULL_ACCESS, approval=ApprovalPolicy.AUTO)
+        boundary = AuthorityBoundary(
+            scope=PermissionScope.FULL_ACCESS, approval=ApprovalPolicy.AUTO
+        )
         assert boundary.scope_allows(PermissionScope.READ_ONLY)
 
     def test_lower_does_not_satisfy_higher(self) -> None:
@@ -60,7 +62,9 @@ class TestAuthorityBoundary:
         assert not b.needs_approval()
 
     def test_needs_approval(self) -> None:
-        b = AuthorityBoundary(scope=PermissionScope.FULL_ACCESS, approval=ApprovalPolicy.REQUIRE_APPROVAL)
+        b = AuthorityBoundary(
+            scope=PermissionScope.FULL_ACCESS, approval=ApprovalPolicy.REQUIRE_APPROVAL
+        )
         assert b.needs_approval()
         assert not b.is_denied()
 
@@ -126,7 +130,9 @@ class TestBuildConfigHierarchy:
         assert cfg.max_file_size_mb == 0
 
     def test_toolkit_config_overrides_defaults(self) -> None:
-        cfg = build_config_hierarchy(toolkit_config={"hash_algorithm": "xxh64", "max_file_size_mb": 100})
+        cfg = build_config_hierarchy(
+            toolkit_config={"hash_algorithm": "xxh64", "max_file_size_mb": 100}
+        )
         assert cfg.hash_algorithm == "xxh64"
         assert cfg.max_file_size_mb == 100
         assert cfg.toolkit_id == "TK-MQ"

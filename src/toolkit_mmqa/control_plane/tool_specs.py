@@ -7,6 +7,7 @@ with appropriate permission scope and approval policy.
 All commands are READ_ONLY + AUTO -- this toolkit reads dataset directories
 and produces QA reports; it never modifies external state.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -81,10 +82,7 @@ TOOLKIT_TOOL_SPECS: dict[str, ToolkitCommandSpec] = {
         command="report",
         spec=_make_spec(
             name="report",
-            description=(
-                "Generate a human-readable QA report from a scan result file. "
-                "Read-only."
-            ),
+            description=("Generate a human-readable QA report from a scan result file. Read-only."),
             input_schema={
                 "type": "object",
                 "properties": {
