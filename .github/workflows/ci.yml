@@ -14,7 +14,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12']
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -27,7 +27,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
@@ -38,7 +38,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
@@ -49,7 +49,7 @@ jobs:
   sbom:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install Syft
       run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
     - name: Generate SBOM (CycloneDX)
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security, lint, sbom]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
     - run: pip install build
     - run: python -m build
