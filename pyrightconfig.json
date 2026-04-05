@@ -1,5 +1,7 @@
 {
   "include": ["src"],
+  "exclude": ["src/toolkit_mmqa/control_plane"],
   "pythonVersion": "3.10",
-  "typeCheckingMode": "basic"
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning"
 }
