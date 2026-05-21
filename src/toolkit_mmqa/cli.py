@@ -70,7 +70,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     if hasattr(args, "max_file_size") and args.max_file_size is not None:
         max_file_size = args.max_file_size
 
-    follow_symlinks = True
+    follow_symlinks = False
     if hasattr(args, "follow_symlinks"):
         follow_symlinks = args.follow_symlinks
 
@@ -271,9 +271,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument(
         "--follow-symlinks",
         action="store_true",
-        default=True,
+        default=False,
         dest="follow_symlinks",
-        help="Follow symbolic links (default)",
+        help="Follow symbolic links (default: skip)",
     )
     s.add_argument(
         "--skip-symlinks",

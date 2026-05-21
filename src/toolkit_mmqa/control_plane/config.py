@@ -34,7 +34,7 @@ class ToolkitConfigContract:
 
     # -- Scan defaults ---------------------------------------------------------
     hash_algorithm: str = "sha256"  # 'sha256' | 'sha512' | 'xxh64'
-    follow_symlinks: bool = True
+    follow_symlinks: bool = False
     max_file_size_mb: int = 0  # 0 = unlimited
 
     # -- Extension -------------------------------------------------------------
@@ -81,7 +81,7 @@ def build_config_hierarchy(
         "structured_logging": True,
         "output_format": "json",
         "hash_algorithm": "sha256",
-        "follow_symlinks": True,
+        "follow_symlinks": False,
         "max_file_size_mb": 0,
         "extra": {},
     }

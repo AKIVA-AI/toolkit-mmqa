@@ -51,13 +51,13 @@ def test_scan_mix_empty_and_populated_dirs(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Symlinks unreliable on Windows CI")
 def test_scan_follows_file_symlink(tmp_path: Path) -> None:
-    """Scanner should handle file symlinks (rglob follows them by default)."""
+    """Scanner should handle file symlinks when explicitly enabled."""
     real = tmp_path / "real.txt"
     real.write_text("hello", encoding="utf-8")
     link = tmp_path / "link.txt"
     link.symlink_to(real)
 
-    result = scan(root=tmp_path)
+    result = scan(root=tmp_path, follow_symlinks=True)
     # Both real file and symlink are enumerated
     assert result.file_count == 2
     # They have same content so they are duplicates

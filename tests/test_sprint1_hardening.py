@@ -161,15 +161,15 @@ def test_skip_symlinks(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(os.name == "nt", reason="Symlinks require elevated privileges on Windows")
 def test_follow_symlinks_default(tmp_path: Path) -> None:
-    """Test that symlinks are followed by default."""
+    """Test that symlinks are skipped by default."""
     real_file = tmp_path / "real.txt"
     real_file.write_text("content", encoding="utf-8")
     link_file = tmp_path / "link.txt"
     link_file.symlink_to(real_file)
 
-    result = scan(root=tmp_path, follow_symlinks=True)
-    assert result.file_count == 2
-    assert result.skipped_symlinks == 0
+    result = scan(root=tmp_path)
+    assert result.file_count == 1
+    assert result.skipped_symlinks == 1
 
 
 def test_skip_symlinks_cli_flag_accepted() -> None:
@@ -180,10 +180,10 @@ def test_skip_symlinks_cli_flag_accepted() -> None:
 
 
 def test_follow_symlinks_cli_default() -> None:
-    """Test --follow-symlinks is the default."""
+    """Test --follow-symlinks is opt-in."""
     parser = build_parser()
     args = parser.parse_args(["scan", "--root", "/tmp"])
-    assert args.follow_symlinks is True
+    assert args.follow_symlinks is False
 
 
 def test_no_symlinks_in_normal_dir(tmp_path: Path) -> None:

@@ -122,7 +122,7 @@ def scan(
     root: Path,
     extensions: set[str] | None = None,
     max_file_size: int | None = None,
-    follow_symlinks: bool = True,
+    follow_symlinks: bool = False,
     progress: bool = False,
 ) -> ScanResult:
     """Scan directory recursively for duplicate files.
@@ -132,7 +132,7 @@ def scan(
         extensions: Set of file extensions to scan (None = all files)
         max_file_size: Maximum file size in bytes to process (None = no limit).
             Files exceeding this limit are skipped.
-        follow_symlinks: If False, symlinks are skipped. Default True.
+        follow_symlinks: If False, symlinks are skipped. Default False.
         progress: If True, display a progress bar on stderr.
 
     Returns:

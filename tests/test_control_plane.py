@@ -126,7 +126,7 @@ class TestBuildConfigHierarchy:
         assert cfg.log_format == "json"
         assert cfg.structured_logging is True
         assert cfg.hash_algorithm == "sha256"
-        assert cfg.follow_symlinks is True
+        assert cfg.follow_symlinks is False
         assert cfg.max_file_size_mb == 0
 
     def test_toolkit_config_overrides_defaults(self) -> None:
