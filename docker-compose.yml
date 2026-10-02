@@ -1,0 +1,8 @@
+services:
+  mmqa:
+    build: .
+    container_name: toolkit-mmqa
+    volumes:
+      - ./datasets:/data:ro
+      - ./reports:/reports
+    command: ["scan", "--root", "/data", "--out", "/reports/scan.json"]

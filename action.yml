@@ -1,0 +1,74 @@
+name: "toolkit-mmqa dataset pre-flight"
+description: "Contamination, dedup and dataset QA checks that fail CI and write a signable in-toto report."
+author: "AKIVA AI, LLC"
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  args:
+    description: >
+      Arguments for toolkit-mmqa, without --out, for example
+      "contamination --train data/train.jsonl --eval data/test.jsonl --field question".
+    required: true
+  extras:
+    description: "Comma-separated optional extras to install: fast, image, audio, hf, signing."
+    required: false
+    default: "fast"
+  report:
+    description: "Where to write the JSON report envelope."
+    required: false
+    default: "mmqa-report.json"
+  python-version:
+    description: "Python version to run the tool with."
+    required: false
+    default: "3.12"
+
+outputs:
+  verdict:
+    description: "pass, fail or error."
+    value: ${{ steps.run.outputs.verdict }}
+  report:
+    description: "Path of the JSON report."
+    value: ${{ steps.run.outputs.report }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install toolkit-mmqa
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        EXTRAS: ${{ inputs.extras }}
+      run: |
+        if [ -n "$EXTRAS" ]; then
+          python -m pip install --quiet "${ACTION_PATH}[${EXTRAS}]"
+        else
+          python -m pip install --quiet "${ACTION_PATH}"
+        fi
+
+    - name: Run toolkit-mmqa
+      id: run
+      shell: bash
+      env:
+        ARGS: ${{ inputs.args }}
+        REPORT: ${{ inputs.report }}
+      run: |
+        set -f  # no globbing when splitting ARGS into words
+        set +e
+        # shellcheck disable=SC2086
+        toolkit-mmqa $ARGS --out "$REPORT"
+        code=$?
+        set -e
+        verdict=error
+        if [ -f "$REPORT" ]; then
+          verdict=$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["predicate"]["verdict"])' "$REPORT")
+          python -c 'import json, sys; from toolkit_mmqa.envelope import render_markdown; print(render_markdown(json.load(open(sys.argv[1]))))' "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+        echo "report=$REPORT" >> "$GITHUB_OUTPUT"
+        exit $code
