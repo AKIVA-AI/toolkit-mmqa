@@ -30,7 +30,7 @@ list that all of them share).
 
 ## Hugging Face Hub
 
-With the `[hf]` extra (`pip install ".[hf]"`), pass a Hub split directly as
+With the `[hf]` extra (`pip install "toolkit-mmqa[hf]"`), pass a Hub split directly as
 `hf:NAME[:CONFIG]:SPLIT[@REVISION]`:
 
 ```bash

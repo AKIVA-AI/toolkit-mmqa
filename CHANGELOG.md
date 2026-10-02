@@ -4,6 +4,8 @@ All notable changes to toolkit-mmqa are documented in this file.
 
 ## [1.0.0] - 2026-09-26
 
+First release on PyPI (published 2026-10-02): `pip install toolkit-mmqa`.
+
 The tool is now a dataset pre-flight and contamination check: a zero-GPU QA
 gate for fine-tuning and evaluation datasets with a signable report.
 

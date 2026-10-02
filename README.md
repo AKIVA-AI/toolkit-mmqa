@@ -1,5 +1,7 @@
 # toolkit-mmqa: dataset pre-flight and contamination check
 
+[![PyPI](https://img.shields.io/pypi/v/toolkit-mmqa.svg)](https://pypi.org/project/toolkit-mmqa/)
+[![Python versions](https://img.shields.io/pypi/pyversions/toolkit-mmqa.svg)](https://pypi.org/project/toolkit-mmqa/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 A pip-installable, zero-GPU QA gate for fine-tuning and evaluation datasets.
@@ -29,7 +31,7 @@ GSM8K (grade-school math, MIT license) ships a 7,473-question training split
 and a 1,319-question test split.
 
 ```bash
-pip install "toolkit-mmqa[fast] @ git+https://github.com/AKIVA-AI/toolkit-mmqa.git"
+pip install "toolkit-mmqa[fast]"
 
 curl -L -o gsm8k_train.jsonl https://raw.githubusercontent.com/openai/grade-school-math/master/grade_school_math/data/train.jsonl
 curl -L -o gsm8k_test.jsonl https://raw.githubusercontent.com/openai/grade-school-math/master/grade_school_math/data/test.jsonl
@@ -103,8 +105,7 @@ benchmarks such as MMLU or HumanEval, see [docs/benchmarks.md](docs/benchmarks.m
 
 The step fails when the verdict is `fail` or `error`, writes the Markdown
 summary to the job summary, and exposes `verdict` and `report` outputs. Pass
-any command's arguments without `--out`. The tag exists once v1.0.0 is
-released; until then use a commit SHA.
+any command's arguments without `--out`.
 
 ## Capability status
 
@@ -127,24 +128,23 @@ released; until then use a commit SHA.
 | Video checks | Planned | Not implemented; video files are compared as bytes only |
 | Media quality checks | Partial | Corrupt images and audio: Working. Blur, exposure, silence, empty text: Planned |
 | GitHub Action | Working | `uses: AKIVA-AI/toolkit-mmqa@<ref>`; smoke-tested in CI |
-| PyPI package | Planned | Not published yet; install from source. The release workflow is ready and waits on the one-time PyPI setup in [RELEASING.md](RELEASING.md). |
+| PyPI package | Working | `pip install toolkit-mmqa`; see [Install](#install) |
 
 ## Install
 
-Not on PyPI yet. Install from source:
+Requires Python 3.10+.
 
 ```bash
-git clone https://github.com/AKIVA-AI/toolkit-mmqa.git
-cd toolkit-mmqa
-pip install .              # core, no dependencies
-pip install ".[signing]"   # adds `cryptography` for --sign / verify
-pip install ".[image]"     # adds Pillow for --image-checks
-pip install ".[audio]"     # adds soundfile for FLAC / Ogg / MP3 / AIFF in --audio-checks
-pip install ".[fast]"      # adds NumPy: vectorized MinHash (same results, ~12x faster)
-pip install ".[hf]"        # adds datasets: read Hugging Face Hub datasets (hf:...)
+pip install toolkit-mmqa                # core, no dependencies
+pip install "toolkit-mmqa[signing]"     # adds `cryptography` for --sign / verify
+pip install "toolkit-mmqa[image]"       # adds Pillow for --image-checks
+pip install "toolkit-mmqa[audio]"       # adds soundfile for FLAC / Ogg / MP3 / AIFF in --audio-checks
+pip install "toolkit-mmqa[fast]"        # adds NumPy: vectorized MinHash (same results, ~12x faster)
+pip install "toolkit-mmqa[hf]"          # adds datasets: read Hugging Face Hub datasets (hf:...)
+toolkit-mmqa --help
 ```
 
-Requires Python 3.10+.
+To work on the code, see [Development](#development).
 
 ## Quick start
 
@@ -557,7 +557,11 @@ docker run --rm -v "$PWD:/data" toolkit-mmqa scan --root /data --image-checks --
 
 ## Development
 
+Install from source in editable mode, with the test, lint and type-check tools:
+
 ```bash
+git clone https://github.com/AKIVA-AI/toolkit-mmqa.git
+cd toolkit-mmqa
 pip install -e ".[dev]"    # all extras plus test tools (imagehash is the test reference)
 pytest -q
 ruff check src/ tests/
