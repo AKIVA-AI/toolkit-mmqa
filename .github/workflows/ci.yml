@@ -144,14 +144,20 @@ jobs:
         "$RUNNER_TEMP/venv/bin/toolkit-mmqa" --help > /dev/null
 
   all-checks:
+    # The single required status check for main. It fails when any job
+    # above failed or was cancelled; a skipped job counts as passing.
     if: always()
     needs: [test, test-core, action, security, lint, sbom, build]
     runs-on: ubuntu-latest
     steps:
-    - name: Check all jobs
+    - name: Verify every job passed
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
       run: |
-        if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
-          echo "One or more jobs failed"
-          exit 1
-        fi
-        echo "All checks passed"
+        echo "Job results: $RESULTS"
+        for result in $RESULTS; do
+          case "$result" in
+            success|skipped) ;;
+            *) echo "A required job ended with: $result"; exit 1 ;;
+          esac
+        done
